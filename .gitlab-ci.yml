@@ -1,0 +1,58 @@
+image: registry.gitlab.com/fidensio/docker/tests/php/ci-cd:latest
+
+stages:
+  - tests
+  - quality
+  - release
+  - versioning
+
+test :
+  stage: tests
+  before_script:
+    - composer install
+  cache:
+    paths:
+      - vendor/
+    policy: push
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never
+  except:
+    - tags
+
+quality :
+  stage: quality
+  cache:
+    paths:
+      - vendor/
+    policy: pull
+  script:
+    - php vendor/bin/phpcs
+  except:
+    - tags
+
+release :
+  stage: release
+  image: docker:19.03.1
+  services:
+    - docker:19.03.1-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE Docker/
+    - docker push $CI_REGISTRY_IMAGE
+  only:
+    - master
+
+versioning :
+  stage: versioning
+  image: docker:19.03.1
+  services:
+    - docker:19.03.1-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE Docker/
+    - docker tag $CI_REGISTRY_IMAGE $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+  only:
+    - tags
