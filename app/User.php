@@ -2,31 +2,35 @@
 
 namespace App;
 
-use Illuminate\Auth\Authenticatable;
-use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Gabievi\Promocodes\Traits\Rewardable;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
-use Laravel\Lumen\Auth\Authorizable;
+use Illuminate\Auth\Authenticatable as BasicAuthenticatable;
+use Stripe\Terminal\Location;
 
-class User extends Model implements AuthenticatableContract, AuthorizableContract
+class User extends Model implements Authenticatable
 {
-    use Authenticatable, Authorizable;
+    use BasicAuthenticatable, Rewardable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
+    protected $primaryKey = 'userId';
+    const CREATED_AT = 'createdAt';
+    const UPDATED_AT = 'updatedAt';
+
     protected $fillable = [
-        'name', 'email',
+        'email',
+        'compId',
+        'password',
+        'indicMobile',
+        'mobile',
+        'stripeId',
+        'crispId',
+        'dateOfBirth',
+        'rank',
+        'blocked'
     ];
 
-    /**
-     * The attributes excluded from the model's JSON form.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'password',
-    ];
+    public function getRememberTokenName()
+    {
+        return null;
+    }
 }

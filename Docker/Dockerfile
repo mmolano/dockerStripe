@@ -1,14 +1,15 @@
-FROM registry.gitlab.com/fidensio/docker/production/php/pattern:latest
+FROM php:7.3-fpm-alpine
 
-ARG RepoPath=gitlab.com/fidensio/tools/templates/ms-lumen.git
-ARG RepoUsername=Docker
-ARG RepoToken=SN1hjma_RLe_46s4yiZp
+# Install composer
+RUN curl -s https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin/ --filename=composer
 
-# Clone project
-RUN git clone https://$RepoUsername:$RepoToken@$RepoPath .
+# Copy composer.lock and composer.json
+COPY composer.lock composer.json /var/www/
 
-# Install project
-RUN composer install --no-dev
+# Set working directory
+WORKDIR /var/www
 
-# Start server
-CMD php -S 0.0.0.0:80 -t public
+# Install composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+CMD php -S 0.0.0.0:80 -t ./public
